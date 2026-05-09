@@ -1,83 +1,86 @@
-## WHMCS
+# Pelican V2 - Advanced WHMCS Provisioning Module
 
-WHMCS Module for the [Pelican Panel](https://github.com/pelican-dev/panel/).
+Um módulo premium e de nível de produção para integrar o **Pelican Panel** (e Pterodactyl v1.x) ao **WHMCS**. Este módulo vai além do simples provisionamento: ele entrega uma experiência completa de "Painel de Controle" diretamente dentro da Área do Cliente do seu WHMCS, reduzindo drasticamente os tickets de suporte.
 
-## Configuration support
+## ✨ Funcionalidades Principais
 
-Please use the [Pelican Discord](https://discord.gg/pelican-panel) for configuration related support instead of GitHub issues.
+* **Provisionamento Automatizado:** Criação, Suspensão, Reativação e Cancelamento automáticos de servidores.
+* **Console Web Interativo (Real-Time):** Terminal `Xterm.js` embutido na Área do Cliente. Permite visualizar logs de inicialização e enviar comandos para o servidor (ex: `op nome`, `say olá`) sem precisar abrir o painel Pelican.
+* **Dashboard de Métricas ao Vivo:** Cartões estilizados que se atualizam automaticamente exibindo o Status do Servidor, Uso de CPU, Memória RAM e Disco (Via AJAX + Client API).
+* **Controles de Energia (Power Actions):** Botões nativos na interface do WHMCS para iniciar, reiniciar, parar ou forçar a parada (kill) do servidor.
+* **UX/UI Premium:** Botões modernos, design inspirado no console do MacOS, botão inteligente de "Copiar IP" e sistema de "Clear Console".
+* **Ferramentas para o Administrador:** Botão customizado "Reinstall Server" disponível na página de gerenciamento do admin no WHMCS.
 
-## NOTE
+---
 
-This module requires the panel to be on version 1.0.0 and above.
+## 📋 Requisitos do Sistema
 
-## Installation
+* **WHMCS:** Versão 8.x ou superior.
+* **Painel:** Pelican Panel v1.x (ou Pterodactyl v1.x).
+* **PHP:** 7.4, 8.0, 8.1 ou 8.2.
 
-[Video Tutorial](https://www.youtube.com/watch?v=wURpRD9vfj4) (uses 0.7 version of the panel but nothing changed functionality wise)
+---
 
-1. Download/Git clone this repository.
-2. Move the ``pelican/`` folder into ``<path to whmcs>/modules/servers/``.
-3. Create API Credentials with these permissions: ![Image](https://i.imgur.com/ZM2NRxD.png)
-4. In WHMCS 8+ navigate to System Settings → Servers. In WHMCS 7 or below navigate to Setup → Products/Services → Servers
-5. Create new server, fill the name with anything you want, hostname as the url to the panel either as an IP or domain. For example: ``123.123.123.123`` or ``my.pelican.panel``
-6. Change Server Type to Pelican, leave username empty, fill the password field with your generated API Key.
-7. Tick the "Secure" option if your panel is using SSL.
-8. Confirm that everything works by clicking the Test Connection button -> Save Changes.
-9. Go back to the Servers screen and press Create New Group, name it anything you want and choose the created server and press the Add button, Save Changes.
-10. Navigate to Setup > Products/Services > Products/Services
-11. Create your desired product (and product group if you haven't already) with the type of Other and product name of anything -> Continue.
-12. Click the Module Settings tab, choose for Module Name Pelican and for the Server Group the group you created in step 8.
-13. Fill all non-optional fields, and you are good to go!
+## 🚀 Como Instalar e Configurar
 
-## Credits
+### Passo 1: Upload dos Arquivos
+1. Faça o download/clone deste repositório.
+2. Envie a pasta `pelicanv2` para dentro do diretório de módulos de servidor do seu WHMCS: `seu-whmcs/modules/servers/`.
 
-[Dane](https://github.com/DaneEveritt) and [everyone else](https://github.com/pelican-dev/panel/graphs/contributors) involved in development of the Pelican Panel.
-[death-droid](https://github.com/death-droid) for the original WHMCS module.
+### Passo 2: Gerar as Chaves de API no Pelican
+Para que o módulo consiga tanto gerenciar a infraestrutura (criar servidores) quanto exibir o console ao vivo, você precisará de **DUAS** chaves de API diferentes criadas por um usuário Administrador:
 
-# FAQ
+1. **Application API Key (Para Provisionamento):**
+   * Logue no Pelican como Administrador.
+   * Vá no **Painel de Admin** (engrenagem no topo) -> **API**.
+   * Clique em "Create New". Dê todas as permissões de leitura e escrita (Read/Write) para Nodes, Allocations, Users, Servers, etc.
+   * Copie o token secreto gigante gerado.
 
-## Overwriting values through configurable options
+2. **Client API Key (Para o Web Console e Gráficos):**
+   * Ainda logado como Administrador, saia do painel de Admin e clique na sua foto/nome no canto superior direito -> **Minha Conta (Account)**.
+   * Vá na aba **API Credentials**.
+   * Digite uma descrição (ex: "Console WHMCS") e clique em **Create**.
+   * ⚠️ **Atenção:** Um popup verde vai aparecer no meio da tela. **Copie o token secreto GIGANTE dentro desse popup**. O texto curto que fica na lista (`pacc_...`) não funciona, você precisa do token do popup!
 
-Overwriting values can be done through either Configurable Options or Custom Fields.
+### Passo 3: Configurar o Servidor no WHMCS
+1. No seu WHMCS, vá em **Opções (Setup) -> Produtos/Serviços -> Servidores**.
+2. Adicione um novo servidor:
+   * **Nome:** Pelican Panel
+   * **Hostname:** A URL completa do seu painel (ex: `https://painel.suahospedagem.com.br`).
+   * **Endereço IP:** (Deixe em branco).
+   * **Tipo do Módulo:** Escolha `Pelicanv2`.
+   * **Usuário:** (Deixe em branco).
+   * **Senha (Password):** Cole aqui a sua **Application API Key** (aquela gerada no painel de admin).
+   * **Hash de Acesso (Access Hash):** Cole aqui a sua **Client API Key** (aquela gerada no seu perfil de usuário com o popup verde).
+   * **Seguro (SSL):** Marque a caixinha se o painel usa HTTPS (Recomendado).
 
-Their name should be exactly what you want to overwrite.
-dedicated_ip => Will overwrite dedicated_ip if its ticked or not.
-Valid options: ``server_name, memory, swap, io, cpu, disk, egg_id, location_id, dedicated_ip, port_range, image, startup, databases, allocations, backups, oom_killer, username``
+### Passo 4: Liberação de Segurança do Web Console (CORS) 🚨 CRÍTICO
+Por motivos de segurança, o daemon do Pelican (`Wings`) bloqueia tentativas de leitura do terminal vindas de outros sites que não sejam o próprio painel. Para que o terminal carregue dentro do site do seu WHMCS, você deve adicionar a URL do seu WHMCS na lista de origens permitidas (CORS) do nó físico.
 
-This also works for any name of environment variable:
-Player Slots => Will overwrite the environment variable named "Player Slots" to its value.
+1. Acesse o **SSH do servidor físico (Node)** onde os jogos rodam.
+2. Edite o arquivo de configuração do Wings: `nano /etc/pelican/config.yml` (ou `/etc/pterodactyl/config.yml`).
+3. Procure a linha `allowed_origins:` e adicione a URL exata do seu WHMCS. Exemplo:
+```yaml
+allowed_origins:
+  - "https://painel.suahospedagem.com.br"
+  - "https://whmcs.suahospedagem.com.br"
+```
+4. Salve o arquivo e reinicie o Wings: `systemctl restart wings` (ou `systemctl restart pelican-wings`).
+5. *Nota: Se a tela do console no WHMCS ficar com erro de "Falha de Rede", certifique-se de que tanto o WHMCS quanto o Wings estão rodando com certificados SSL válidos (HTTPS/WSS).*
 
-Useful trick: You can use the | seperator to change the display name of the variable like this:
-dedicated_ip|Dedicated IP => Will be displayed as "Dedicated IP" but will work correctly.
+---
 
-[Sample configuration for configurable memory](https://owo.whats-th.is/85JwhVX.png)
+## 🛠 Configuração do Produto no WHMCS
 
-## Couldn't find any nodes satisfying the request
+Ao criar o produto/serviço no WHMCS e vincular a este módulo, vá na aba **Configurações do Módulo (Module Settings)** e preencha os Custom Fields conforme o padrão do Pterodactyl:
 
-This can be caused from any of the following: Wrong location, not enough disk space/CPU/RAM, or no allocations matching the provided criteria.
+* **Location ID:** ID da localização onde o servidor será criado.
+* **Egg ID:** ID do jogo/egg.
+* **Memory / Swap / CPU / Disk:** Limites de recursos em MB/%.
+* **Port Range:** (Opcional) Portas permitidas separadas por vírgula.
+* Etc...
 
-## The username/password field is empty, how does the user get credentials?
+---
 
-The customer gets an email from the panel to setup their account (incl. password) if they didn't have an account before. Otherwise they should be able to use their existing credentials.
-
-## The customer didn't receive any emails from the panel
-
-Double check that you've configured the panel's mail settings correctly, the Test button works in the admin area's mail settings, and that you've restarted pteroq afterwards confirming that everything works.
-
-## My game requires multiple ports allocated
-
-Currently, this isn't possible with this module but is planned.
-
-## The server gets assigned to the first/admin user of the panel instead of the user who ordered the service
-
-Please update your module (by redownloading it).
-
-## The feature_limits.backups field must be present
-
-Please update your module (by redownloading it).
-
-## How to enable module debug log
-
-1. In WHMCS 7 or below navigate to Utilities > Logs > Module Log. For WHMCS 8.x navigate to System Logs > Module Log in the left sidebar.
-2. Click the Enable Debug Logging button.
-3. Do the action that failed again and you will have required logs to debug the issue. All 404 errors can be ignored.
-4. Remember to Disable Debug Logging if you are using this in production, as it's not recommended to have it enabled.
+## 📜 Licença e Créditos
+Este módulo foi amplamente refatorado para garantir máxima estabilidade em ambientes de produção rodando PHP 8+, integrando as melhores práticas de WebSockets de maneira assíncrona. Aproveite!
